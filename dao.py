@@ -1,4 +1,4 @@
-from models import Jogos, Usuario
+from models import Jogo, Usuario
 
 SQL_DELETA_JOGO = 'delete from jogo where id = %s'
 SQL_JOGO_POR_ID = 'SELECT id, nome, categoria, console from jogo where id = %s'
@@ -33,7 +33,7 @@ class JogoDao:
         cursor = self.__db.connection.cursor()
         cursor.execute(SQL_JOGO_POR_ID, (id,))
         tupla = cursor.fetchone()
-        return Jogos(tupla[1], tupla[2], tupla[3], id=tupla[0])
+        return Jogo(tupla[1], tupla[2], tupla[3], id=tupla[0])
 
     def deletar(self, id):
         self.__db.connection.cursor().execute(SQL_DELETA_JOGO, (id, ))
@@ -54,10 +54,9 @@ class UsuarioDao:
 
 def traduz_jogos(jogos):
     def cria_jogo_com_tupla(tupla):
-        return Jogos(tupla[1], tupla[2], tupla[3], id=tupla[0])
+        return Jogo(tupla[1], tupla[2], tupla[3], id=tupla[0])
     return list(map(cria_jogo_com_tupla, jogos))
 
 
 def traduz_usuario(tupla):
     return Usuario(tupla[0], tupla[1], tupla[2])
-
