@@ -66,6 +66,7 @@ def atualizar():
     arquivo = request.files['arquivo']
     upload_path = app.config['UPLOAD_PATH']
     timestamp = time.time()
+    deleta_arquivo(jogo.id)
     arquivo.save(f'{upload_path}/capa{jogo.id}-{timestamp}.jpg')
     return redirect(url_for('index'))
 
@@ -109,5 +110,9 @@ def recupera_imagem(id):
     for nome_arquivo in os.listdir(app.config['UPLOAD_PATH']):
         if f'capa{id}' in nome_arquivo:
             return nome_arquivo
+
+def deleta_arquivo(id):
+    arquivo = recupera_imagem(id)
+    os.remove(os.path.join(app.config['UPLOAD_PATH'], arquivo))
 
 app.run(debug=True)
