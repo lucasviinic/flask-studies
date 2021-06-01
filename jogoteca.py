@@ -4,6 +4,7 @@ from models import Jogo, Usuario
 from dao import JogoDao, UsuarioDao
 from flask_mysqldb import MySQL
 import os
+import time
 
 app = Flask(__name__)
 app.secret_key = 'alura'
@@ -32,15 +33,16 @@ def novo():
 
 @app.route('/criar', methods=['POST',])
 def criar():
-    nome = request. form['nome']
-    categoria = request. form['categoria']
-    console = request. form['console']
+    nome = request.form['nome']
+    categoria = request.form['categoria']
+    console = request.form['console']
     jogo = Jogo(nome, categoria, console)
     jogo = jogo_dao.salvar(jogo)
 
     arquivo = request.files['arquivo']
     upload_path = app.config['UPLOAD_PATH']
-    arquivo.save(f"{upload_path}/capa{jogo.id}.jpg")
+    timestamp = time.time()
+    arquivo.save(f'{upload_path}/capa{jogo.id}-{timestamp}.jpg')
     return redirect(url_for('index'))
 
 @app.route('/editar/<int:id>')
@@ -48,16 +50,23 @@ def editar(id):
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
         return redirect(url_for('login', proxima=url_for('editar')))
     jogo = jogo_dao.busca_por_id(id)
-    return render_template('editar.html', titulo='Editando Jogo', jogo=jogo,
-                            capa_jogo=f'capa{id}.jpg')
+    nome_imagem =  recupera_imagem(id)
+    capa_jogo = f'capa{id}.jpg'
+    return render_template('editar.html', titulo='Editando jogo', jogo=jogo,
+                                capa_jogo = nome_imagem)
 
 @app.route('/atualizar', methods=['POST',])
 def atualizar():
-    nome = request. form['nome']
-    categoria = request. form['categoria']
-    console = request. form['console']
+    nome = request.form['nome']
+    categoria = request.form['categoria']
+    console = request.form['console']
     jogo = Jogo(nome, categoria, console, id=request.form['id'])
     jogo_dao.salvar(jogo)
+
+    arquivo = request.files['arquivo']
+    upload_path = app.config['UPLOAD_PATH']
+    timestamp = time.time()
+    arquivo.save(f'{upload_path}/capa{jogo.id}-{timestamp}.jpg')
     return redirect(url_for('index'))
 
 @app.route('/deletar/<int:id>')
@@ -96,5 +105,9 @@ def logout():
 def imagem(nome_arquivo):
     return send_from_directory('uploads', nome_arquivo)
 
+def recupera_imagem(id):
+    for nome_arquivo in os.listdir(app.config['UPLOAD_PATH']):
+        if f'capa{id}' in nome_arquivo:
+            return nome_arquivo
 
 app.run(debug=True)
